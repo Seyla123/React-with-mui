@@ -15,9 +15,41 @@ import {
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import { ThemeProvider,createTheme } from '@mui/material/styles';
 import useStyles from './styles';
+import React, { useEffect, useState } from 'react';
 const data = [1,2,3,4,5,6,7,8,9,10];
+
 function App() {
+  const [classess, setClasses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const classes = useStyles();
+
+  useEffect(() => {
+    const fetchClasses = async () => {
+      try {
+        const response = await fetch('https://epress-api-mysql-jpd.vercel.app/classes'); // Use your deployed backend URL
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        setClasses(data);
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchClasses();
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
   return (
     <>
       <ThemeProvider theme={createTheme()}>
@@ -47,8 +79,8 @@ function App() {
           </div>
           <Container className={classes.cardGrid}>
             <Grid container spacing={4} justifyContent={"center"}>
-              {data.map((item) => (
-              <Grid key={item} item xs={12} sm={6} md={4}>
+              {classess.map((item) => (
+              <Grid key={item.class_id} item xs={12} sm={6} md={4}>
                 <Card className={classes.card}>
                   <CardMedia 
                   className={classes.cardMedia}
@@ -59,7 +91,7 @@ function App() {
                   />
                   <CardContent className={classes.cardContent}>
                     <Typography gutterBottom variant="h5" component="div">
-                      Lizard
+                      {item.class_name}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       Lizards are a widespread group of squamate reptiles, with over 6,000
